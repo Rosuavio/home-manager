@@ -9,7 +9,7 @@ rec {
   };
 
   home-manager =
-    pkgs.callPackage ./home-manager { paths = [ (toString ./.) ]; };
+    pkgs.callPackage ./home-manager { paths = toString ./.; };
 
   install =
     pkgs.callPackage ./home-manager/install.nix { inherit home-manager; };

@@ -1,4 +1,4 @@
 final: prev: {
   home-manager =
-    prev.callPackage ./home-manager { paths = [ (toString ./.) ]; };
+    prev.callPackage ./home-manager { path = toString ./.; };
 }

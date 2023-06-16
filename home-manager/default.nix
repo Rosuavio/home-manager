@@ -6,11 +6,19 @@
 # Extra path to Home Manager. If set then this path will be tried
 # before `$HOME/.config/nixpkgs/home-manager` and
 # `$HOME/.nixpkgs/home-manager`.
-, paths ? [ ] }:
+, path ? null }:
 
 let
+  defaultPaths =
+    [ "${XDG_CONFIG_HOME:-$HOME/.config}/nixpkgs/home-manager"
+      "$HOME/.nixpkgs/home-manager"
+    ];
 
-  pathsStr = lib.concatMapStringsSep " " (x: ''"'' + x + ''"'') paths;
+  paths =
+    if builtins.isNull path then defaultPaths
+    else if builtins.isString path then path ++ defaultPaths
+    else if builtins.isList path then path
+    else builtins.abort "ERROR";
 
   nixos-option = pkgs.nixos-option or (callPackage
     (pkgs.path + "/nixos/modules/installer/tools/nixos-option") { });
@@ -43,7 +51,7 @@ in runCommand "home-manager" {
       ]
     }" \
     --subst-var-by HOME_MANAGER_LIB '${../lib/bash/home-manager.sh}' \
-    --subst-var-by HOME_MANAGER_PATHS '${pathsStr}' \
+    --subst-var-by HOME_MANAGER_PATHS ${lib.excapeShellArgs paths} \
     --subst-var-by OUT "$out"
 
   install -D -m755 ${./completion.bash} \

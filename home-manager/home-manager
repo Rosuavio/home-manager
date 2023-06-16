@@ -105,14 +105,23 @@ function setConfigFile() {
 
 function setHomeManagerNixPath() {
     local path
-    for path in "@HOME_MANAGER_PATH@" \
-                "${XDG_CONFIG_HOME:-$HOME/.config}/nixpkgs/home-manager" \
-                "$HOME/.nixpkgs/home-manager" ; do
-        if [[ -e "$path" || "$path" =~ ^https?:// ]] ; then
-            EXTRA_NIX_PATH+=("home-manager=$path")
-            return
+    for p in "${XDG_CONFIG_HOME:-$HOME/.config}/nixpkgs/home-manager" \
+             "$HOME/.nixpkgs/home-manager" ; do
+        if [[ -e "$p" ]] ; then
+            path="$p"
         fi
     done
+
+    if [[ "$path" ]]; then
+        _i 'Home manager repo detected at %s'
+           "$path" >&2
+        exit 1
+    fi
+
+    path="@HOME_MANAGER_PATH@"
+    if [[ -e "$path" || "$path" =~ ^https?:// ]] ; then
+        EXTRA_NIX_PATH+=("home-manager=$path")
+    fi
 }
 
 # Sets some useful Home Manager related paths as global read-only variables.

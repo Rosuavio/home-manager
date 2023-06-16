@@ -105,12 +105,37 @@ function setConfigFile() {
 
 function setHomeManagerNixPath() {
     local path
-    for path in "@HOME_MANAGER_PATH@" \
-                "${XDG_CONFIG_HOME:-$HOME/.config}/nixpkgs/home-manager" \
-                "$HOME/.nixpkgs/home-manager" ; do
+
+    path="@HOME_MANAGER_PATH@"
+    if [[ -n "$path" ]] ; then
         if [[ -e "$path" || "$path" =~ ^https?:// ]] ; then
             EXTRA_NIX_PATH+=("home-manager=$path")
             return
+        else
+            _iWarn 'home-manager not found at %s.' \
+                   "$path"
+        fi
+    fi
+
+    for p in "${XDG_CONFIG_HOME:-$HOME/.config}/nixpkgs/home-manager" \
+             "$HOME/.nixpkgs/home-manager" ; do
+        if [[ -e "$p" ]] ; then
+            _iWarn $'Warning: The fallback home-manager path %s has been deprecated and a file/directory was found there.' \
+                   "$p"
+            _i $'         To remove this warning, do one of the fallowing.
+
+         a) Explicitly tell home-manager to use the path.
+            If home-manager comes from your home config, you can set
+              { programs.home-manager.path = "%s"; }
+            in %s.
+
+            If you import home-manager directly, you can use the `path` parameter
+              pkgs.callPackage /path/to/home-manager-package { path = "%s"; }
+            when calling the home-manager package.
+
+         b) Remove the deprecated path.
+              $ rm -r "%s"' \
+            "$p" "${HOME_MANAGER_CONFIG:-your home config}" "$p" "$p"
         fi
     done
 }

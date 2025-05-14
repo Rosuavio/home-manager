@@ -15,6 +15,41 @@ let
 
   profileDirectory = config.home.profileDirectory;
 
+  # default fonts configuration file
+  # priority 52
+  defaultFontsConf =
+    let
+      genDefault =
+        fonts: name:
+        lib.optionalString (fonts != [ ]) ''
+          <alias binding="same">
+            <family>${name}</family>
+            <prefer>
+            ${lib.concatStringsSep "" (
+              map (font: ''
+                <family>${font}</family>
+              '') fonts
+            )}
+            </prefer>
+          </alias>
+        '';
+    in
+    pkgs.writeText "fc-52-hm-default-fonts.conf.conf" ''
+      <?xml version='1.0'?>
+      <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
+      <fontconfig>
+
+        <!-- Default fonts -->
+        ${genDefault cfg.defaultFonts.sansSerif "sans-serif"}
+
+        ${genDefault cfg.defaultFonts.serif "serif"}
+
+        ${genDefault cfg.defaultFonts.monospace "monospace"}
+
+        ${genDefault cfg.defaultFonts.emoji "emoji"}
+
+      </fontconfig>
+    '';
 in
 {
   meta.maintainers = [ lib.maintainers.rycee ];
@@ -108,6 +143,9 @@ in
         # fontconfig default config files
         ln -s ${pkgs.fontconfig.out}/etc/fonts/conf.d/*.conf \
               $dst/
+
+        # 52-hm-default-fonts.conf.conf
+        ln -s ${defaultFontsConf} $dst/52-hm-default-fonts.conf.conf
       '')
     ];
 
@@ -166,31 +204,6 @@ in
 
           <cachedir>${config.home.path}/lib/fontconfig/cache</cachedir>
         '';
-
-        "fontconfig/conf.d/52-hm-default-fonts.conf".text =
-          let
-            genDefault =
-              fonts: name:
-              lib.optionalString (fonts != [ ]) ''
-                <alias binding="same">
-                  <family>${name}</family>
-                  <prefer>
-                  ${lib.concatStringsSep "" (
-                    map (font: ''
-                      <family>${font}</family>
-                    '') fonts
-                  )}
-                  </prefer>
-                </alias>
-              '';
-          in
-          mkFontconfigConf ''
-            <!-- Default fonts -->
-            ${genDefault cfg.defaultFonts.sansSerif "sans-serif"}
-            ${genDefault cfg.defaultFonts.serif "serif"}
-            ${genDefault cfg.defaultFonts.monospace "monospace"}
-            ${genDefault cfg.defaultFonts.emoji "emoji"}
-          '';
       };
   };
 }

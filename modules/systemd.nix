@@ -149,6 +149,13 @@ in
         '';
       };
 
+      packages = mkOption {
+        default = [ ];
+        type = types.listOf types.package;
+        example = literalExpression "[ pkgs.dunst ]";
+        description = "Packages providing systemd units and hooks.";
+      };
+
       services = mkOption {
         default = { };
         type = unitType "service";
@@ -351,6 +358,17 @@ in
       sessionVariables
 
       settings
+
+      {
+        "systemd/user" = {
+          recursive = true;
+          source = pkgs.symlinkJoin {
+            name = "user-systemd-services";
+            paths = cfg.packages;
+            stripPrefix = "/lib/systemd/user";
+          };
+        };
+      }
     ];
 
     # Run systemd service reload if user is logged in. If we're

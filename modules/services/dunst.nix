@@ -140,8 +140,7 @@ in
 
         home.packages = [ cfg.package ];
 
-        xdg.dataFile."dbus-1/services/org.knopwob.dunst.service".source =
-          "${pkgs.dunst}/share/dbus-1/services/org.knopwob.dunst.service";
+        dbus.packages = [ pkgs.dunst ];
 
         services.dunst.settings.global.icon_path =
           let
